@@ -1,4 +1,4 @@
-FROM jembi/platform:latest
+FROM docker:20.10.12
 
 ADD renew.sh .
 
