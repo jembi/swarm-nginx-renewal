@@ -23,7 +23,7 @@ docker run --rm \
     --name certbot \
     --network cert-renewal-network \
     -v "data-certbot-conf:/etc/letsencrypt/archive/$domainName" \
-    certbot/certbot certonly -n \
+    certbot/certbot:v1.23.0 certonly -n \
     --standalone \
     $stagingArgs \
     -m "$renewalEmail" \
