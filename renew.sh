@@ -4,7 +4,7 @@ renewalEmail=${RENEWAL_EMAIL}
 staging=${STAGING:-"false"}
 domainName=${DOMAIN_NAME}
 subdomainNames=${SUBDOMAINS}
-stack=${STACK_NAME:-"instant"}
+stack=${REVERSE_PROXY_STACK_NAME:-"instant"}
 timestamp="$(date "+%Y%m%d%H%M%S")"
 domainArgs=""
 
