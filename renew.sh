@@ -4,6 +4,7 @@ renewalEmail=${RENEWAL_EMAIL}
 staging=${STAGING:-"false"}
 domainName=${DOMAIN_NAME}
 subdomainNames=${SUBDOMAINS}
+stack=${REVERSE_PROXY_STACK_NAME:-"instant"}
 timestamp="$(date "+%Y%m%d%H%M%S")"
 domainArgs=""
 
@@ -54,12 +55,12 @@ docker volume rm data-certbot-conf
 docker secret create --label name=nginx "$timestamp-fullchain.pem" "/instant/certificates/fullchain1.pem"
 docker secret create --label name=nginx "$timestamp-privkey.pem" "/instant/certificates/privkey1.pem"
 
-currentFullchainName=$(docker service inspect instant_reverse-proxy-nginx --format "{{(index .Spec.TaskTemplate.ContainerSpec.Secrets 0).SecretName}}")
-currentPrivkeyName=$(docker service inspect instant_reverse-proxy-nginx --format "{{(index .Spec.TaskTemplate.ContainerSpec.Secrets 1).SecretName}}")
+currentFullchainName=$(docker service inspect ${stack}_reverse-proxy-nginx --format "{{(index .Spec.TaskTemplate.ContainerSpec.Secrets 0).SecretName}}")
+currentPrivkeyName=$(docker service inspect ${stack}_reverse-proxy-nginx --format "{{(index .Spec.TaskTemplate.ContainerSpec.Secrets 1).SecretName}}")
 
 docker service update \
     --secret-rm "$currentFullchainName" \
     --secret-rm "$currentPrivkeyName" \
     --secret-add source="$timestamp-fullchain.pem",target=/run/secrets/fullchain.pem \
     --secret-add source="$timestamp-privkey.pem",target=/run/secrets/privkey.pem \
-    instant_reverse-proxy-nginx
+    ${stack}_reverse-proxy-nginx
