@@ -8,6 +8,24 @@ stack=${REVERSE_PROXY_STACK_NAME:-"instant"}
 timestamp="$(date "+%Y%m%d%H%M%S")"
 domainArgs=""
 
+latestSecretEpoch=0
+latestSecretDate=""
+for secret in $(docker secret ls -q --filter label=name=nginx); do
+  secretCreatedAt=$(docker secret inspect $secret --format {{.CreatedAt}})
+  # when pulling the date with format it will output for example: 2023-04-12 07:50:35.8089129 +0000 UTC
+  # so we need to strip out the UTC part before converting to epoch time, which is where the %UTC* comes in
+  epochTime=$(date -d "${secretCreatedAt%UTC*}" +%s)
+  if [ $epochTime -gt $latestSecretEpoch ]; then
+    latestSecretEpoch=$epochTime
+    latestSecretDate=$(date -d "${secretCreatedAt%UTC*}")
+  fi
+done
+
+if [ $(date -d "$latestSecretDate +60 days" +%s) -gt $(date -d "today" +%s) ]; then
+  echo "Certificate still younger than 60 days, not renewing"
+  exit 0
+fi
+
 if [ ! -z "$subdomainNames" ]; then
   domainArgs="-d $domainName,$subdomainNames"
 else
